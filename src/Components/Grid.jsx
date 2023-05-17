@@ -13,7 +13,7 @@ export default function Grid({ size }) {
   return (
     <div
       style={{
-        gridTemplateColumns: `repeat(${size}, minmax(0, 1fr));`,
+        gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
       }}
       className={`grid gap-4`}
     >
