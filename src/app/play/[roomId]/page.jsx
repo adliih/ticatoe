@@ -1,24 +1,35 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import Grid from "@/Components/Grid";
 import PlayerturnInfo from "@/Components/PlayerturnInfo";
-
-let socket;
+import { JOIN } from "@/constants/SocketEvent";
 
 export default function PlayRoom({ params }) {
   const { roomId } = params;
   const gridSize = 4;
   const isWaiting = false;
 
+  const [playerId, setPlayerId] = useState("");
+
   const initSocket = async () => {
     await fetch("/api/socket");
 
-    socket = io();
+    const socket = io("/");
 
-    socket.on("connect", () => {
+    socket.on("connect", async () => {
       console.log("connected");
+
+      setPlayerId(socket.id);
+
+      socket.onAny((...args) => {
+        console.log("Received: ", args);
+      });
+
+      const room = await socket.emitWithAck(JOIN, roomId);
+
+      console.log(room);
     });
   };
 
@@ -32,6 +43,9 @@ export default function PlayRoom({ params }) {
         <h3 className="font-bold">
           Room ID: <span>{roomId}</span>
         </h3>
+        <h2>
+          Your ID: <span>{playerId}</span>
+        </h2>
         <div>
           <Grid size={gridSize} />
           <PlayerturnInfo isWaiting={isWaiting} />

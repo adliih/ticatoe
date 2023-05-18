@@ -6,7 +6,7 @@ export default function PlayerTurnInfo({ isWaiting }) {
       {isWaiting ? (
         <div>Waiting for other player...</div>
       ) : (
-        <div>It's your turn!</div>
+        <div>It&apos;s your turn!</div>
       )}
     </div>
   );
