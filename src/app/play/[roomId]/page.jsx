@@ -1,35 +1,49 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import io from "socket.io-client";
 import Grid from "@/Components/Grid";
 import PlayerturnInfo from "@/Components/PlayerturnInfo";
-import { JOIN } from "@/constants/SocketEvent";
+import { JOIN, TILE_CLICKED, TURN_CHANGE } from "@/constants/SocketEvent";
 
 export default function PlayRoom({ params }) {
   const { roomId } = params;
   const gridSize = 4;
-  const isWaiting = false;
+  const [isWaiting, setIsWaiting] = useState(true);
 
-  const [playerId, setPlayerId] = useState("");
+  const [player, updatePlayer] = useReducer(
+    (state, updates) => ({ ...state, ...updates }),
+    {
+      id: "",
+      value: "",
+    }
+  );
 
   const initSocket = async () => {
     await fetch("/api/socket");
 
-    const socket = io("/");
+    const socket = io();
 
     socket.on("connect", async () => {
-      console.log("connected");
+      console.log("connected as: ", socket.id);
 
-      setPlayerId(socket.id);
+      const response = await socket.emitWithAck(JOIN, roomId);
 
-      socket.onAny((...args) => {
-        console.log("Received: ", args);
+      updatePlayer({
+        id: response.player.id,
+        value: response.player.value,
       });
 
-      const room = await socket.emitWithAck(JOIN, roomId);
+      console.log("join result", { response, player });
+    });
 
-      console.log(room);
+    socket.on(TURN_CHANGE, (playerId) => {
+      console.log(TURN_CHANGE, { playerId, player });
+      setIsWaiting(playerId != player.id);
+    });
+
+    socket.on(TILE_CLICKED, (...params) => {
+      console.log(TILE_CLICKED, params);
     });
   };
 
@@ -44,7 +58,10 @@ export default function PlayRoom({ params }) {
           Room ID: <span>{roomId}</span>
         </h3>
         <h2>
-          Your ID: <span>{playerId}</span>
+          Your ID: <span>{player.id}</span>
+        </h2>
+        <h2>
+          Your Avatar: <span>{player.value}</span>
         </h2>
         <div>
           <Grid size={gridSize} />

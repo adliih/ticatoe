@@ -1,5 +1,6 @@
-import { createRoom, getRoom } from "@lib/repo/room-repo";
+import { Room } from "@lib/model/room";
+import { createRoom } from "@lib/repo/room-repo";
 
-export function getOrCreateRoom(id: string) {
-  return getRoom(id) || createRoom({ id });
+export async function getOrCreateRoom(id: string): Promise<Room> {
+  return createRoom({ id });
 }
