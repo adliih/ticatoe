@@ -1,6 +1,6 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Ticatoe
 
-## Getting Started
+## Run The Server
 
 First, run the development server:
 
@@ -14,21 +14,31 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Technical Documentation
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+This is a fullstack Next.js application that use websocket to run a very simple tic-tac-toe games with your friends.
 
-## Learn More
+The flow for the play room is something like this.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```mermaid
+sequenceDiagram
+  User ->> Client: Open `/play/[room-id]` page
+  Client ->>  API: Call `/api/socket` api
+  Client -> Socket: Established Websocket API
+  Socket ->> Socket: Check joined socket for [room-id]
+  note right of Socket: Exit process when<br> there are already > 2 socket in the room
+  Socket ->> Client: Assign client to socket room with id: [room-id]
+  Socket ->> Client: Give Player Value, either O or X
+  Client --> Client: Waiting for Server clue to start the game
+  loop
+    Socket ->> Client: Broadcast to the room: TURN_CHANGE (playerId)
+    Client ->> User : Change waiting state
+    User ->> Client: Click on grid tile
+    Client ->> Socket: Send TILE_CLICK (roomId, row, column, playerId, playerValue)
+    Socket ->> Client: Broadcast to the room: TILE_CLICKED (roomId, row, column, playerValue)
+    Client ->> User: Update the tile view based on TILE_CLICKED event
+    break when found any winnning row/column/diagonal
+      Client ->> User: Render win / lose page
+    end
+  end
+```
