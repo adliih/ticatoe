@@ -13,7 +13,7 @@ const ioHandler = (req, res) => {
     io.on("connection", async (socket) => {
       socket.broadcast.emit("a user connected");
 
-      attachHandlers(socket);
+      attachHandlers(io, socket);
     });
 
     server.io = io;

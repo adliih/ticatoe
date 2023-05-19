@@ -1,68 +1,66 @@
 import {
+  ENEMY_JOINED,
   JOIN,
+  PLAYERS_UPDATED,
   TILE_CLICK,
   TILE_CLICKED,
-  TURN_CHANGE,
 } from "@/constants/SocketEvent";
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { getOrCreateRoom } from "./room-service";
 import { createFirstPlayer, createSecondPlayer } from "./player-service";
+import { debug } from "console";
 
-export function attachHandlers(socket: Socket) {
-  handleJoin(socket);
-  handleTileClick(socket);
+export function attachHandlers(io: Server, socket: Socket) {
+  handleJoin(io, socket);
+  handleTileClick(io, socket);
 }
 
 const QUOTA_PLAYER_PER_ROOM = 2;
 
-function handleJoin(socket: Socket) {
-  socket.on(JOIN, async (roomId, callback) => {
+function handleJoin(io: Server, socket: Socket) {
+  socket.on(JOIN, async (roomId) => {
     const currentSocketsInRoom = await socket.in(roomId).fetchSockets();
     const currentPlayerIds = currentSocketsInRoom.map(({ id }) => id);
 
     console.log("Current players in the room: ", { roomId, currentPlayerIds });
 
-    let currentPlayerCount = currentPlayerIds.length;
-
-    if (currentPlayerCount >= QUOTA_PLAYER_PER_ROOM) {
+    if (currentPlayerIds.length >= QUOTA_PLAYER_PER_ROOM) {
       // already max
       return;
     }
 
-    const room = await getOrCreateRoom(roomId);
-    const player =
-      currentPlayerCount == 0
-        ? await createFirstPlayer({ id: socket.id })
-        : await createSecondPlayer({ id: socket.id });
-
     socket.join(roomId);
-    socket.data["player-data"] = player;
 
-    currentPlayerCount += 1;
+    await updatePlayers(io, roomId);
 
-    callback({ room, player });
-
-    if (currentPlayerCount !== QUOTA_PLAYER_PER_ROOM) {
+    if (currentPlayerIds.length + 1 !== QUOTA_PLAYER_PER_ROOM) {
       return;
     }
-    // quota for each room is fullfilled. let's get started. start with player one's turn
-    const [playerOneId] = currentPlayerIds;
-    socket.to(roomId).emit(TURN_CHANGE, playerOneId);
+    // quota for each room is fullfilled. let's get started.
+    socket.to(roomId).emit(ENEMY_JOINED);
   });
 }
 
-function handleTileClick(socket: Socket) {
-  socket.on(TILE_CLICK, async (roomId, row, column, playerId, playerValue) => {
+async function updatePlayers(io: Server, roomId: string) {
+  const sockets = await io.in(roomId).fetchSockets();
+
+  const players = sockets.map(({ id }, index) => {
+    if (index == 0) {
+      return createFirstPlayer({ id });
+    } else {
+      return createSecondPlayer({ id });
+    }
+  });
+
+  console.log("updatePlayers", { sockets, players });
+
+  io.to(roomId).emit(PLAYERS_UPDATED, { players });
+}
+
+function handleTileClick(io: Server, socket: Socket) {
+  socket.on(TILE_CLICK, async ({ roomId, ...params }) => {
     const roomSocket = socket.in(roomId);
-    // broadcast the tile click event to all player
-    roomSocket.emit(TILE_CLICKED, row, column, playerValue);
-
-    // find the next player
-    const [nextPlayerSocket] = (await roomSocket.fetchSockets()).filter(
-      (socket) => socket.id != playerId
-    );
-
-    // broadcast the turn change event with next player id param
-    roomSocket.emit(TURN_CHANGE, nextPlayerSocket.id);
+    // broadcast the tile click event to other player
+    roomSocket.emit(TILE_CLICKED, params);
   });
 }

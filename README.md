@@ -25,18 +25,25 @@ sequenceDiagram
   User ->> Client: Open `/play/[room-id]` page
   Client ->>  API: Call `/api/socket` api
   Client -> Socket: Established Websocket API
-  Socket ->> Socket: Check joined socket for [room-id]
-  note right of Socket: Exit process when<br> there are already > 2 socket in the room
-  Socket ->> Client: Assign client to socket room with id: [room-id]
-  Socket ->> Client: Give Player Value, either O or X
-  Client --> Client: Waiting for Server clue to start the game
+
+  loop until player/scoket count is 2
+    Client ->> Socket: JOIN (roomId)
+    Socket ->> Socket: Check joined socket for [room-id]
+    note right of Socket: Exit process when<br> there are already > 2 socket in the room
+    Socket ->> Client: to all socket: PLAYERS_UPDATED (players)
+    Socket ->> Client: to another socket: ENEMY_JOINED
+    Client ->> User : setIsWaiting(true)
+  end
+
   loop
-    Socket ->> Client: Broadcast to the room: TURN_CHANGE (playerId)
-    Client ->> User : Change waiting state
     User ->> Client: Click on grid tile
-    Client ->> Socket: Send TILE_CLICK (roomId, row, column, playerId, playerValue)
-    Socket ->> Client: Broadcast to the room: TILE_CLICKED (roomId, row, column, playerValue)
-    Client ->> User: Update the tile view based on TILE_CLICKED event
+    Client ->> User : Update the grid tile
+    Client ->> Socket: Send TILE_CLICK (roomId, row, col, playerValue)
+    Client ->> User : setIsWaiting(false)
+
+    Socket ->> Client: to another socket: TILE_CLICKED (row, col, playerValue)
+    Client ->> User: Update the grid tile based on TILE_CLICKED event
+    Client ->> User: setIsWaiting(true)
     break when found any winnning row/column/diagonal
       Client ->> User: Render win / lose page
     end
