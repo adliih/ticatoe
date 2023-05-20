@@ -6,7 +6,8 @@
     "dev": "NODE_ENV=development next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "NODE_ENV=test vitest"
   },
   "dependencies": {
     "@types/node": "20.1.4",
@@ -26,5 +27,8 @@
     "tailwindcss": "3.3.2",
     "typescript": "5.0.4",
     "utf-8-validate": "^5.0.10"
+  },
+  "devDependencies": {
+    "vitest": "^0.31.1"
   }
 }
