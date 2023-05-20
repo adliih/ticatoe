@@ -24,7 +24,7 @@ export default function PlayRoom({ params }) {
       return;
     }
     return players[activePlayerIndex];
-  }, [activePlayerIndex]);
+  }, [players, activePlayerIndex]);
 
   useEffect(() => {
     function onConnect() {
@@ -55,12 +55,12 @@ export default function PlayRoom({ params }) {
       socket.off(PLAYERS_UPDATED, onPlayersUpdated);
       socket.off(ENEMY_JOINED, onEnemyJoined);
     };
-  }, []);
+  }, [roomId]);
 
   useEffect(() => {
     fetch("/api/socket");
     socket.emit(JOIN, roomId);
-  }, []);
+  }, [roomId]);
 
   return (
     <section>

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useReducer } from "react";
+import React, { useEffect, useReducer } from "react";
 import { socket } from "../socket";
 import { TILE_CLICK, TILE_CLICKED } from "@/constants/SocketEvent";
+import { initGrid } from "@/helper/GridHelper";
 
 export default function Grid({
   size,
@@ -11,36 +12,17 @@ export default function Grid({
   isWaiting,
   setIsWaiting,
 }) {
-  const [clickedTiles, updateClickedTiles] = useReducer(
-    (prevClickedTiles, { row, col, playerValue }) => {
-      const copy = {
-        ...prevClickedTiles,
-      };
-      if (row in copy) {
-        copy[row] = {
-          ...copy[row],
-          [col]: playerValue,
-        };
-      } else {
-        copy[row] = {
-          [col]: playerValue,
-        };
-      }
+  const [grids, updateClickedTiles] = useReducer(
+    (prevGrids, { row, col, playerValue }) => {
+      const copy = [...prevGrids];
+      copy[row][col] = playerValue;
 
       console.log("updateClickedTiles", copy);
 
       return copy;
     },
-    {}
+    initGrid(size)
   );
-
-  const grids = useMemo(() => {
-    return times(size).flatMap((_, row) => {
-      return times(size).map((_, col) => {
-        return { row, col };
-      });
-    });
-  }, [size, player]);
 
   useEffect(() => {
     // listening to TILE_CLICKED event
@@ -55,7 +37,7 @@ export default function Grid({
     return () => {
       socket.off(TILE_CLICKED, onTileClicked);
     };
-  }, [socket]);
+  }, [setIsWaiting]);
 
   return (
     <div
@@ -64,16 +46,17 @@ export default function Grid({
       }}
       className={`grid gap-4`}
     >
-      {grids.map(({ row, col }, index) => (
+      {/* flat the 2 dimentional array */}
+      {grids.flat(2).map((val, index) => (
         <Cell
           isWaiting={isWaiting}
           setIsWaiting={setIsWaiting}
           key={index}
-          row={row}
-          col={col}
+          row={parseInt(index / size)}
+          col={parseInt(index % size)}
           roomId={roomId}
           playerValue={player?.value}
-          clickedValue={clickedTiles?.[row]?.[col]}
+          clickedValue={val}
           updateClickedTiles={updateClickedTiles}
         />
       ))}
@@ -109,8 +92,4 @@ function Cell({
       className="flex w-20 h-20 items-center justify-center bg-gray-600 cursor-pointer"
     ></div>
   );
-}
-
-function times(x) {
-  return [...Array(x)];
 }
