@@ -13,6 +13,7 @@ export default function PlayRoom({ params }) {
   const [isWaiting, setIsWaiting] = useState(true);
   const [players, setPlayers] = useState([]);
   const [activePlayerIndex, setActivePlayerIndex] = useState(null);
+  const [winningPlayerValue, setWinningPlayerValue] = useState(undefined);
 
   const player = useMemo(() => {
     console.log("Trying to update active player", {
@@ -39,20 +40,13 @@ export default function PlayRoom({ params }) {
       setIsWaiting(false);
     }
 
-    function onPlayersUpdated({ players }) {
-      setPlayers(players);
-      setActivePlayerIndex(players.findIndex(({ id }) => id === socket.id));
-    }
-
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
-    socket.on(PLAYERS_UPDATED, onPlayersUpdated);
     socket.on(ENEMY_JOINED, onEnemyJoined);
 
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
-      socket.off(PLAYERS_UPDATED, onPlayersUpdated);
       socket.off(ENEMY_JOINED, onEnemyJoined);
     };
   }, [roomId]);
@@ -75,16 +69,41 @@ export default function PlayRoom({ params }) {
             player={player}
             isWaiting={isWaiting}
             setIsWaiting={setIsWaiting}
+            setWinningPlayerValue={setWinningPlayerValue}
           />
+          <WinningInfo winningPlayerValue={winningPlayerValue} />
           <PlayerturnInfo isWaiting={isWaiting} />
         </div>
-        <PlayerList players={players} activePlayerIndex={activePlayerIndex} />
+        <PlayerList
+          players={players}
+          setPlayers={setPlayers}
+          activePlayerIndex={activePlayerIndex}
+          setActivePlayerIndex={setActivePlayerIndex}
+        />
       </div>
     </section>
   );
 }
 
-function PlayerList({ players, activePlayerIndex }) {
+function PlayerList({
+  players,
+  setPlayers,
+  activePlayerIndex,
+  setActivePlayerIndex,
+}) {
+  useEffect(() => {
+    function onPlayersUpdated({ players }) {
+      setPlayers(players);
+      setActivePlayerIndex(players.findIndex(({ id }) => id === socket.id));
+    }
+
+    socket.on(PLAYERS_UPDATED, onPlayersUpdated);
+
+    return () => {
+      socket.off(PLAYERS_UPDATED, onPlayersUpdated);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col gap-3 bg-slate-500">
       <h1 className="text-center text-xl font-semibold text-green-100 p-4">
@@ -104,6 +123,17 @@ function PlayerList({ players, activePlayerIndex }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function WinningInfo({ winningPlayerValue }) {
+  if (!winningPlayerValue) {
+    return;
+  }
+  return (
+    <div>
+      <span className="font-semibold text-6xl">{winningPlayerValue}</span>
     </div>
   );
 }

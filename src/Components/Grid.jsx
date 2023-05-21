@@ -4,6 +4,7 @@ import React, { useEffect, useReducer } from "react";
 import { socket } from "../socket";
 import { TILE_CLICK, TILE_CLICKED } from "@/constants/SocketEvent";
 import { initGrid } from "@/helper/GridHelper";
+import { findWinningPlayerValue } from "@/helper/ScoreHelper";
 
 export default function Grid({
   size,
@@ -11,18 +12,32 @@ export default function Grid({
   player,
   isWaiting,
   setIsWaiting,
+  setWinningPlayerValue,
 }) {
   const [grids, updateClickedTiles] = useReducer(
     (prevGrids, { row, col, playerValue }) => {
       const copy = [...prevGrids];
       copy[row][col] = playerValue;
 
-      console.log("updateClickedTiles", copy);
-
       return copy;
     },
     initGrid(size)
   );
+
+  // check for winning player every grid updates
+  const checkWin = () => {
+    const winningValue = findWinningPlayerValue(grids, size);
+    if (!winningValue) {
+      return;
+    }
+
+    setWinningPlayerValue(winningValue);
+    setIsWaiting(true); // disable turn
+  };
+
+  useEffect(() => {
+    checkWin();
+  }, [grids]);
 
   useEffect(() => {
     // listening to TILE_CLICKED event
