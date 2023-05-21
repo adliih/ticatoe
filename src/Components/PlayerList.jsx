@@ -24,8 +24,8 @@ export default function PlayerList({
   }, []);
 
   return (
-    <div className="flex flex-col gap-3 bg-slate-500 mx-4 mb-10 pb-10 ">
-      <h1 className="text-center text-xl font-semibold text-green-100 p-4">
+    <div className="flex flex-col gap-3 bg-slate-500 mx-4 mb-10 p-4 ">
+      <h1 className="text-center text-xl font-semibold text-green-100">
         Player List
       </h1>
       {players.map(({ id, value }, index) => (
