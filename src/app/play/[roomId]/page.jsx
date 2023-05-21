@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useEffect, useMemo, useReducer, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { socket } from "../../../socket";
 import Grid from "@/Components/Grid";
+import PlayerList from "@/Components/PlayerList";
 import PlayerturnInfo from "@/Components/PlayerturnInfo";
-import { JOIN, PLAYERS_UPDATED, ENEMY_JOINED } from "@/constants/SocketEvent";
+import WinningInfo from "@/Components/WinningInfo";
+import { JOIN, ENEMY_JOINED } from "@/constants/SocketEvent";
 
 export default function PlayRoom({ params }) {
   const { roomId } = params;
-  const gridSize = 4;
+  const gridSize = 3;
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [isWaiting, setIsWaiting] = useState(true);
   const [players, setPlayers] = useState([]);
@@ -27,6 +29,7 @@ export default function PlayRoom({ params }) {
     return players[activePlayerIndex];
   }, [players, activePlayerIndex]);
 
+  // socket listener
   useEffect(() => {
     function onConnect() {
       setIsConnected(true);
@@ -51,6 +54,7 @@ export default function PlayRoom({ params }) {
     };
   }, [roomId]);
 
+  // Socket Connection
   useEffect(() => {
     fetch("/api/socket");
     socket.emit(JOIN, roomId);
@@ -82,58 +86,5 @@ export default function PlayRoom({ params }) {
         />
       </div>
     </section>
-  );
-}
-
-function PlayerList({
-  players,
-  setPlayers,
-  activePlayerIndex,
-  setActivePlayerIndex,
-}) {
-  useEffect(() => {
-    function onPlayersUpdated({ players }) {
-      setPlayers(players);
-      setActivePlayerIndex(players.findIndex(({ id }) => id === socket.id));
-    }
-
-    socket.on(PLAYERS_UPDATED, onPlayersUpdated);
-
-    return () => {
-      socket.off(PLAYERS_UPDATED, onPlayersUpdated);
-    };
-  }, []);
-
-  return (
-    <div className="flex flex-col gap-3 bg-slate-500">
-      <h1 className="text-center text-xl font-semibold text-green-100 p-4">
-        Player List
-      </h1>
-      {players.map(({ id, value }, index) => (
-        <div
-          className={[
-            index === activePlayerIndex ? "text-green-300" : "",
-            "px-3",
-          ].join(" ")}
-          key={id}
-        >
-          <div className="flex gap-2">
-            <span>{value}</span>
-            <span>{id}</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function WinningInfo({ winningPlayerValue }) {
-  if (!winningPlayerValue) {
-    return;
-  }
-  return (
-    <div>
-      <span className="font-semibold text-6xl">{winningPlayerValue}</span>
-    </div>
   );
 }
