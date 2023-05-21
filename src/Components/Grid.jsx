@@ -59,7 +59,7 @@ export default function Grid({
       style={{
         gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
       }}
-      className={`grid gap-4`}
+      className={`grid gap-2`}
     >
       {/* flat the 2 dimentional array */}
       {grids.flat(2).map((val, index) => (

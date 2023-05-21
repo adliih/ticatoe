@@ -24,7 +24,7 @@ export default function PlayerList({
   }, []);
 
   return (
-    <div className="flex flex-col gap-3 bg-slate-500">
+    <div className="flex flex-col gap-3 bg-slate-500 mx-4 mb-10 pb-10 ">
       <h1 className="text-center text-xl font-semibold text-green-100 p-4">
         Player List
       </h1>
@@ -36,7 +36,7 @@ export default function PlayerList({
           ].join(" ")}
           key={id}
         >
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center sm:justify-start ">
             <span>[{value}]</span>
             <span>{id}</span>
           </div>

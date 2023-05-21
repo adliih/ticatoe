@@ -66,7 +66,7 @@ export default function PlayRoom({ params }) {
 
   return (
     <section>
-      <div className="flex justify-center gap-4 mt-10 flex-1">
+      <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10 flex-1">
         <div className="flex flex-col gap-4 items-center">
           <h1>
             Connection Status: {isConnected ? `Connected ` : "Disconnected"}
