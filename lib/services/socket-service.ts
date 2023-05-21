@@ -6,9 +6,7 @@ import {
   TILE_CLICKED,
 } from "@/constants/SocketEvent";
 import { Server, Socket } from "socket.io";
-import { getOrCreateRoom } from "./room-service";
 import { createFirstPlayer, createSecondPlayer } from "./player-service";
-import { debug } from "console";
 
 export function attachHandlers(io: Server, socket: Socket) {
   handleJoin(io, socket);

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { socket } from "../../../socket";
 import Grid from "@/Components/Grid";
 import PlayerList from "@/Components/PlayerList";
-import PlayerturnInfo from "@/Components/PlayerturnInfo";
+import PlayerTurnInfo from "@/Components/PlayerTurnInfo";
 import WinningInfo from "@/Components/WinningInfo";
 import { JOIN, ENEMY_JOINED } from "@/constants/SocketEvent";
 
@@ -80,7 +80,7 @@ export default function PlayRoom({ params }) {
             setWinningPlayerValue={setWinningPlayerValue}
           />
           <WinningInfo winner={winner} />
-          <PlayerturnInfo
+          <PlayerTurnInfo
             isWaiting={isWaiting}
             winningPlayerValue={winningPlayerValue}
           />
