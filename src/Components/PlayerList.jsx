@@ -37,7 +37,7 @@ export default function PlayerList({
           key={id}
         >
           <div className="flex gap-2">
-            <span>{value}</span>
+            <span>[{value}]</span>
             <span>{id}</span>
           </div>
         </div>

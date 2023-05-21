@@ -29,6 +29,10 @@ export default function PlayRoom({ params }) {
     return players[activePlayerIndex];
   }, [players, activePlayerIndex]);
 
+  const winner = useMemo(() => {
+    return players.find(({ value }) => value == winningPlayerValue);
+  }, [winningPlayerValue]);
+
   // socket listener
   useEffect(() => {
     function onConnect() {
@@ -75,8 +79,11 @@ export default function PlayRoom({ params }) {
             setIsWaiting={setIsWaiting}
             setWinningPlayerValue={setWinningPlayerValue}
           />
-          <WinningInfo winningPlayerValue={winningPlayerValue} />
-          <PlayerturnInfo isWaiting={isWaiting} />
+          <WinningInfo winner={winner} />
+          <PlayerturnInfo
+            isWaiting={isWaiting}
+            winningPlayerValue={winningPlayerValue}
+          />
         </div>
         <PlayerList
           players={players}

@@ -1,12 +1,13 @@
 import React from "react";
 
-export default function WinningInfo({ winningPlayerValue }) {
-  if (!winningPlayerValue) {
+export default function WinningInfo({ winner }) {
+  if (!winner) {
     return;
   }
   return (
-    <div>
-      <span className="font-semibold text-6xl">{winningPlayerValue}</span>
+    <div className="flex flex-col max-w-sm text-center">
+      <span className="text-xl">Game Finished</span>
+      <span className="font-semibold text-4xl">Congrats, {winner.value}!</span>
     </div>
   );
 }
